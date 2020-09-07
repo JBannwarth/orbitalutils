@@ -81,4 +81,78 @@ def two_body_3d(R1_0, R2_0, V1_0, V2_0, m1, m2, tSpan=np.array([0., 10.0])):
     ys, ts = rkf45(rates, Y0, tSpan)
     
     return (ys, ts)
+
+def n_body_3d_rates(t, Y, M):
+    """Find the state derivatives for the N body problem in 3D.
+
+    Parameters
+    ----------
+    t : float
+        Time to evaluate the derivatives at.
+    Y : numpy.array
+        State vector.
+    M : numpy.array
+        Array of the masses of the N bodies (kg).
+
+    Returns
+    -------
+    F : numpy.array
+        Array of state derivatives.
+    """
+    # Extract vectors from state vector
+    n = M.shape[0]
+
+    # Store the vectors for each mass in a different column
+    R = np.reshape(Y[0:n*3], (3, n), order='F')
+    V = np.reshape(Y[n*3:], (3, n), order='F')
     
+    # Constants
+    G = 6.67259e-11
+
+    # Find acceleration
+    A = np.zeros(V.shape)
+    for m in range(n):
+        R_m = R[:,m]
+        R_other = np.delete(R, m, 1) - np.reshape(R_m, (3,1))
+        r_other = np.linalg.norm(R_other, axis=0)
+        M_other = np.delete(M, m, 0)
+        A[:,m] = np.sum(G*M_other*R_other/r_other**3, axis=1)
+
+    # Assign the rates
+    F = np.concatenate( (np.reshape(V,(n*3,), order='F'), np.reshape(A,(n*3,), order='F')) )
+    return F
+
+def n_body_3d(R_0, V_0, M, tSpan=np.array([0., 10.0])):
+    """ Compute the position and velocity of two bodies in 3D over time.
+
+    Parameters
+    ----------
+    R1_0 : numpy.array
+        Initial position of the first body.
+    V1_0 : numpy.array
+        Initial velocity of the first body.
+    V2_0 : numpy.array
+        Initial velocity of the second body.
+    m1 : float
+        Mass of the first body (kg).
+    m2 : float
+        Mass of the second body (kg).
+    tSpan : numpy.array
+        Range of times to solve for.
+
+    Returns
+    -------
+    ys : numpy.array
+        State time response.
+    ts : numpy.array
+        Time vector.
+    """
+    n = M.shape[0]
+    Y0 = np.concatenate( (np.reshape(R_0, (n*3,), order='F'), np.reshape(V_0, (n*3,), order='F')) )
+    
+    # Create anonymous function to pass m1 and m2
+    rates = lambda t, Y: n_body_3d_rates(t, Y, M)
+    
+    ys, ts = rkf45(rates, Y0, tSpan)
+    
+    return (ys, ts)
