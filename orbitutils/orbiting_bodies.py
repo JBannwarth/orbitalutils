@@ -123,20 +123,19 @@ def n_body_3d_rates(t, Y, M):
     return F
 
 def n_body_3d(R_0, V_0, M, tSpan=np.array([0., 10.0])):
-    """ Compute the position and velocity of two bodies in 3D over time.
+    """ Compute the position and velocity of N bodies in 3D over time.
 
     Parameters
     ----------
-    R1_0 : numpy.array
-        Initial position of the first body.
-    V1_0 : numpy.array
-        Initial velocity of the first body.
-    V2_0 : numpy.array
-        Initial velocity of the second body.
-    m1 : float
-        Mass of the first body (kg).
-    m2 : float
-        Mass of the second body (kg).
+    R_0 : numpy.array
+        Vector of initial positions of the N bodies in the form
+        [x1 y1 z1 x2 y2 z2 ...]
+    V_0 : numpy.array
+        Vector of initial velocities of the N bodies in the form
+        [vx1 vy1 vz1 vx2 vy2 vz2 ...]
+    M : float
+        Vector of masses (kg) in the form
+        [m1 m2 m3 ...]
     tSpan : numpy.array
         Range of times to solve for.
 
