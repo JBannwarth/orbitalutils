@@ -4,6 +4,7 @@ Written by: Jeremie X. J. Bannwarth
 import numpy as np
 from orbitutils.solvers import rkf45
 
+
 def two_body_3d_rates(t, Y, m1=1., m2=.1):
     """Find the state derivatives for the two body problem in 3D.
 
@@ -38,10 +39,10 @@ def two_body_3d_rates(t, Y, m1=1., m2=.1):
     
     # Compute derivatives
     F = np.zeros(Y.shape)
-    F[0:3] = V1 # dR1/dt = V1
-    F[3:6] = V2 # dR2/dt = V2
-    F[6:9] = G*m2*R/r**3
-    F[9:12] = - G*m1*R/r**3
+    F[0:3] = V1  # dR1/dt = V1
+    F[3:6] = V2  # dR2/dt = V2
+    F[6:9] = G * m2 * R / r**3
+    F[9:12] = - G * m1 * R / r**3
     
     return F
 
@@ -76,11 +77,12 @@ def two_body_3d(R1_0, R2_0, V1_0, V2_0, m1, m2, tSpan=np.array([0., 10.0])):
     Y0 = np.concatenate((R1_0, R2_0, V1_0, V2_0))
     
     # Create anonymous function to pass m1 and m2
-    rates = lambda t, Y: two_body_3d_rates(t, Y, m1, m2)
+    def rates(t, Y): return two_body_3d_rates(t, Y, m1, m2)
     
     ys, ts = rkf45(rates, Y0, tSpan)
     
     return (ys, ts)
+
 
 def n_body_3d_rates(t, Y, M):
     """Find the state derivatives for the N body problem in 3D.
@@ -103,8 +105,8 @@ def n_body_3d_rates(t, Y, M):
     n = M.shape[0]
 
     # Store the vectors for each mass in a different column
-    R = np.reshape(Y[0:n*3], (3, n), order='F')
-    V = np.reshape(Y[n*3:], (3, n), order='F')
+    R = np.reshape(Y[0:n * 3], (3, n), order='F')
+    V = np.reshape(Y[n * 3:], (3, n), order='F')
     
     # Constants
     G = 6.67259e-11
@@ -112,15 +114,17 @@ def n_body_3d_rates(t, Y, M):
     # Find acceleration
     A = np.zeros(V.shape)
     for m in range(n):
-        R_m = R[:,m]
-        R_other = np.delete(R, m, 1) - np.reshape(R_m, (3,1))
+        R_m = R[:, m]
+        R_other = np.delete(R, m, 1) - np.reshape(R_m, (3, 1))
         r_other = np.linalg.norm(R_other, axis=0)
         M_other = np.delete(M, m, 0)
-        A[:,m] = np.sum(G*M_other*R_other/r_other**3, axis=1)
+        A[:, m] = np.sum(G * M_other * R_other / r_other**3, axis=1)
 
     # Assign the rates
-    F = np.concatenate( (np.reshape(V,(n*3,), order='F'), np.reshape(A,(n*3,), order='F')) )
+    F = np.concatenate((np.reshape(V, (n * 3,), order='F'),
+                        np.reshape(A, (n * 3,), order='F')))
     return F
+
 
 def n_body_3d(R_0, V_0, M, tSpan=np.array([0., 10.0])):
     """ Compute the position and velocity of N bodies in 3D over time.
@@ -147,11 +151,13 @@ def n_body_3d(R_0, V_0, M, tSpan=np.array([0., 10.0])):
         Time vector.
     """
     n = M.shape[0]
-    Y0 = np.concatenate( (np.reshape(R_0, (n*3,), order='F'), np.reshape(V_0, (n*3,), order='F')) )
+    Y0 = np.concatenate((np.reshape(R_0, (n * 3,), order='F'),
+                         np.reshape(V_0, (n * 3,), order='F')))
     
     # Create anonymous function to pass m1 and m2
-    rates = lambda t, Y: n_body_3d_rates(t, Y, M)
+    def rates(t, Y): return n_body_3d_rates(t, Y, M)
     
     ys, ts = rkf45(rates, Y0, tSpan)
     
     return (ys, ts)
+
