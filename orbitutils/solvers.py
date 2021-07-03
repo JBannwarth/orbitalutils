@@ -100,7 +100,7 @@ def rk14(f, y0, tMax=10.0, h=0.01, order=4):
     return (ys, ts)
 
 
-def rkf45(f, y0, tSpan=np.array([0., 10.0]), tol=1.e-8):
+def rkf45(f, y0, tSpan=np.array([0., 10.0]), tol=1.e-8, postFunc=None):
     """Use variable step-size Runge-Kutta algorithm to numerically solve ODE.
 
     Parameters
@@ -113,6 +113,8 @@ def rkf45(f, y0, tSpan=np.array([0., 10.0]), tol=1.e-8):
         Span of time to solve for.
     tol : float
         Allowable truncation error.
+    postFunc : function
+        Function applied to y at the end of each integration step (e.g. renormalisation function)
 
     Returns
     -------
@@ -176,6 +178,8 @@ def rkf45(f, y0, tSpan=np.array([0., 10.0]), tol=1.e-8):
             h = np.min([h, tMax-t])
             t += h
             y += h*Phi5
+            if postFunc is not None:
+                y = postFunc(y)
             ts.append(deepcopy(t))
             ys.append(deepcopy(y))
 
