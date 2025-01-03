@@ -5,8 +5,7 @@ setup(
     version='0.1.0',
     author='Jeremie X. J. Bannwarth',
     author_email='jban039@aucklanduni.ac.nz',
-    packages=['orbitutils', 'orbitutils.test'],
-    # scripts=['bin/script1','bin/script2'],
+    packages=['orbitutils'],
     url='https://github.com/JBannwarth/orbitutils',
     license='LICENSE',
     description='Utilities to solve orbital mechanics problems, based on ' + \
